@@ -13,8 +13,8 @@ function getInitials(name: string): string {
 
 function getAvatarBg(name: string): string {
   const colors = [
-    'bg-indigo-500', 'bg-violet-500', 'bg-emerald-500', 
-    'bg-amber-500', 'bg-rose-500', 'bg-teal-500', 'bg-sky-500', 'bg-orange-500'
+    'bg-indigo-400', 'bg-violet-400', 'bg-emerald-400',
+    'bg-amber-400', 'bg-rose-400', 'bg-teal-400', 'bg-sky-400', 'bg-orange-400'
   ];
   const idx = name.split('').reduce((acc: number, c: string) => acc + c.charCodeAt(0), 0) % colors.length;
   return colors[idx];
@@ -23,15 +23,17 @@ function getAvatarBg(name: string): string {
 function StatusPill({ status }: { status: string }) {
   if (status === 'completed') {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+        style={{ background: "rgba(52,211,153,0.14)", color: "#059669", border: "1px solid rgba(52,211,153,0.28)" }}>
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
         Completed
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-amber-200">
-      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+      style={{ background: "rgba(251,191,36,0.14)", color: "#d97706", border: "1px solid rgba(251,191,36,0.28)" }}>
+      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
       Pending
     </span>
   );
@@ -39,7 +41,7 @@ function StatusPill({ status }: { status: string }) {
 
 export default function BookingsList() {
   const [activeStatus, setActiveStatus] = useState<'all' | 'pending' | 'completed'>('all');
-  
+
   const { data, isLoading } = useListBookings({
     status: activeStatus === 'all' ? undefined : activeStatus
   });
@@ -49,35 +51,53 @@ export default function BookingsList() {
     <AdminLayout>
       <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4">
         <div>
-          <h1 className="font-serif text-2xl font-semibold text-foreground">Bookings</h1>
-          <p className="text-muted-foreground mt-1">Manage all guest reservations</p>
+          <h1 className="font-serif text-2xl font-semibold text-foreground tracking-tight">Bookings</h1>
+          <p className="text-slate-500 text-sm mt-0.5">Manage all guest reservations</p>
         </div>
         <Link href="/bookings/new">
-          <Button className="bg-primary hover:bg-primary/90 text-white">
+          <Button
+            className="rounded-xl font-semibold text-white h-10 px-5 transition-all"
+            style={{
+              background: "linear-gradient(145deg, hsl(245,80%,62%), hsl(262,83%,58%))",
+              boxShadow: "0 1px 0 rgba(255,255,255,0.25) inset, 0 4px 16px rgba(99,102,241,0.3)",
+              border: "1px solid rgba(255,255,255,0.15)",
+            }}
+          >
             <Plus className="w-4 h-4 mr-2" />
             New Booking
           </Button>
         </Link>
       </div>
 
-      <div className="bg-card rounded-xl border border-card-border p-4 mb-6 shadow-sm">
+      {/* Search + filter bar */}
+      <div className="glass-card rounded-2xl p-4 mb-5">
         <div className="relative">
-          <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input 
-            className="rounded-full h-11 pl-10 shadow-sm w-full bg-background border-border focus-visible:ring-primary/50" 
-            placeholder="Search bookings..." 
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Input
+            className="rounded-xl h-10 pl-10 w-full text-sm glass-input"
+            placeholder="Search bookings..."
           />
         </div>
-        <div className="flex gap-2 mt-4">
+        <div className="flex gap-1.5 mt-3">
           {(['all', 'pending', 'completed'] as const).map(s => (
             <button
               key={s}
               onClick={() => setActiveStatus(s)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                activeStatus === s 
-                  ? 'bg-primary text-white' 
-                  : 'text-muted-foreground hover:text-foreground bg-transparent'
-              }`}
+              className="px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-150"
+              style={
+                activeStatus === s
+                  ? {
+                      background: "rgba(99,102,241,0.13)",
+                      color: "hsl(245,80%,50%)",
+                      border: "1px solid rgba(99,102,241,0.25)",
+                      boxShadow: "0 1px 0 rgba(255,255,255,0.8) inset",
+                    }
+                  : {
+                      background: "transparent",
+                      color: "#64748b",
+                      border: "1px solid transparent",
+                    }
+              }
             >
               {s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
@@ -85,67 +105,80 @@ export default function BookingsList() {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl border border-card-border overflow-hidden shadow-sm">
+      {/* Table */}
+      <div className="glass-card rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
-              <tr>
-                <th className="px-6 py-4 font-medium">Guest</th>
-                <th className="px-6 py-4 font-medium">Room</th>
-                <th className="px-6 py-4 font-medium">Check-in</th>
-                <th className="px-6 py-4 font-medium">Check-out</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium text-right">Action</th>
+            <thead>
+              <tr style={{ borderBottom: "1px solid rgba(99,102,241,0.09)" }}>
+                {["Guest", "Room", "Check-in", "Check-out", "Status", ""].map(h => (
+                  <th key={h} className="px-5 py-3.5 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody>
               {isLoading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <tr key={i}>
-                    <td colSpan={6} className="px-6 py-4">
-                      <Skeleton className="h-10 w-full" />
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i} style={{ borderBottom: "1px solid rgba(99,102,241,0.06)" }}>
+                    <td colSpan={6} className="px-5 py-3">
+                      <Skeleton className="h-9 w-full rounded-lg" />
                     </td>
                   </tr>
                 ))
               ) : bookings?.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center text-muted-foreground">
-                    <BookOpen className="w-10 h-10 mx-auto opacity-20 mb-3" />
-                    <p className="font-medium text-foreground">No bookings found</p>
-                    <p className="text-sm mt-1">Try adjusting your filters or create a new booking.</p>
+                  <td colSpan={6} className="px-5 py-16 text-center">
+                    <BookOpen className="w-10 h-10 mx-auto opacity-10 mb-3 text-indigo-400" />
+                    <p className="font-medium text-slate-600">No bookings found</p>
+                    <p className="text-sm mt-1 text-slate-400">Try adjusting your filters or create a new booking.</p>
                   </td>
                 </tr>
               ) : (
-                bookings?.map((b) => (
-                  <tr key={b.id} className="hover:bg-muted/30 transition-colors group">
-                    <td className="px-6 py-4">
+                bookings?.map((b, i) => (
+                  <tr
+                    key={b.id}
+                    className="hover:bg-white/35 transition-all group"
+                    style={{ borderBottom: i < (bookings.length - 1) ? "1px solid rgba(99,102,241,0.06)" : "none" }}
+                  >
+                    <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-medium shrink-0 ${getAvatarBg(b.guestName)}`}>
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 ${getAvatarBg(b.guestName)}`}
+                          style={{ boxShadow: "0 2px 6px rgba(0,0,0,0.12)" }}
+                        >
                           {getInitials(b.guestName)}
                         </div>
                         <div>
-                          <p className="font-medium text-foreground">{b.guestName}</p>
-                          {b.phone && <p className="text-xs text-muted-foreground">{b.phone}</p>}
+                          <p className="font-medium text-slate-800 text-sm">{b.guestName}</p>
+                          {b.phone && <p className="text-xs text-slate-400 mt-0.5">{b.phone}</p>}
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded-md text-xs font-mono">
+                    <td className="px-5 py-4">
+                      <span
+                        className="px-2.5 py-1 rounded-lg text-xs font-mono font-medium text-slate-600"
+                        style={{ background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.14)" }}
+                      >
                         {b.roomNumber || "TBD"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-foreground">
+                    <td className="px-5 py-4 text-sm text-slate-600">
                       {new Date(b.checkInDate).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 text-sm text-foreground">
+                    <td className="px-5 py-4 text-sm text-slate-600">
                       {new Date(b.checkOutDate).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-4">
                       <StatusPill status={b.status} />
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <Link href={`/bookings/${b.id}`} className="text-primary text-sm font-medium hover:underline">
-                        View &rarr;
+                    <td className="px-5 py-4 text-right">
+                      <Link
+                        href={`/bookings/${b.id}`}
+                        className="text-indigo-600 text-xs font-semibold hover:text-indigo-700 transition-colors"
+                      >
+                        View →
                       </Link>
                     </td>
                   </tr>

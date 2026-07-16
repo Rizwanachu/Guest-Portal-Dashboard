@@ -57,57 +57,58 @@
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 6px);
 }
 
 :root {
-  --background: 220 14% 96%;
-  --foreground: 224 71% 4%;
-  --border: 220 13% 91%;
-  --input: 220 13% 91%;
-  --ring: 239 84% 67%;
+  --background: 248 100% 99%;
+  --foreground: 240 15% 12%;
+  --border: 240 20% 88%;
+  --input: 240 20% 90%;
+  --ring: 245 80% 64%;
 
   --card: 0 0% 100%;
-  --card-foreground: 224 71% 4%;
-  --card-border: 220 13% 91%;
+  --card-foreground: 240 15% 12%;
+  --card-border: 240 30% 90%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 224 71% 4%;
-  --popover-border: 220 13% 91%;
+  --popover-foreground: 240 15% 12%;
+  --popover-border: 240 30% 90%;
 
-  --primary: 239 84% 67%;
+  --primary: 245 80% 60%;
   --primary-foreground: 0 0% 100%;
-  --primary-border: hsl(239 84% 67% / 0.3);
+  --primary-border: hsl(245 80% 60% / 0.3);
 
   --secondary: 262 83% 58%;
   --secondary-foreground: 0 0% 100%;
   --secondary-border: hsl(262 83% 58% / 0.3);
 
-  --muted: 220 14% 94%;
-  --muted-foreground: 215 16% 47%;
-  --muted-border: hsl(220 13% 88%);
+  --muted: 240 20% 94%;
+  --muted-foreground: 240 10% 46%;
+  --muted-border: hsl(240 20% 88%);
 
-  --accent: 240 5% 96%;
-  --accent-foreground: 224 71% 4%;
-  --accent-border: hsl(220 13% 91%);
+  --accent: 245 80% 60%;
+  --accent-foreground: 0 0% 100%;
+  --accent-border: hsl(245 80% 60% / 0.2);
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
   --destructive-border: hsl(0 84% 60% / 0.3);
 
-  --sidebar: 224 71% 4%;
-  --sidebar-foreground: 220 14% 92%;
-  --sidebar-border: 220 13% 12%;
-  --sidebar-primary: 239 84% 67%;
+  /* Sidebar — light glass tokens */
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 240 15% 14%;
+  --sidebar-border: 240 30% 88%;
+  --sidebar-primary: 245 80% 60%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 220 13% 10%;
-  --sidebar-accent-foreground: 220 14% 92%;
-  --sidebar-ring: 239 84% 67%;
-  --sidebar-muted-foreground: 215 16% 55%;
+  --sidebar-accent: 245 80% 96%;
+  --sidebar-accent-foreground: 245 80% 45%;
+  --sidebar-ring: 245 80% 60%;
+  --sidebar-muted-foreground: 240 10% 52%;
 
-  --radius: 0.75rem;
-  --app-font-sans: 'Inter', sans-serif;
-  --app-font-serif: 'Outfit', sans-serif;
+  --radius: 1rem;
+  --app-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  --app-font-serif: 'Outfit', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   --app-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
@@ -116,7 +117,15 @@
     @apply border-border;
   }
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased text-foreground;
+    background-color: #f0eeff;
+    background-image:
+      radial-gradient(ellipse 90% 65% at 10% -10%, rgba(167, 139, 250, 0.22) 0%, transparent 55%),
+      radial-gradient(ellipse 55% 45% at 88% 8%,  rgba(99, 102, 241, 0.17) 0%, transparent 52%),
+      radial-gradient(ellipse 65% 55% at 65% 100%, rgba(196, 181, 253, 0.15) 0%, transparent 58%),
+      radial-gradient(ellipse 40% 38% at 2% 72%,  rgba(167, 139, 250, 0.12) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 40% at 95% 55%,  rgba(244, 114, 182, 0.07) 0%, transparent 50%);
+    background-attachment: fixed;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
@@ -124,9 +133,121 @@
   canvas { touch-action: none; }
 }
 
+/* ── Liquid Glass Utilities ── */
 @layer utilities {
-  .stat-glow-indigo { background: linear-gradient(135deg, hsl(239 84% 67% / 0.1), hsl(239 84% 67% / 0.03)); }
-  .stat-glow-violet { background: linear-gradient(135deg, hsl(262 83% 58% / 0.1), hsl(262 83% 58% / 0.03)); }
-  .stat-glow-emerald { background: linear-gradient(135deg, hsl(142 71% 45% / 0.1), hsl(142 71% 45% / 0.03)); }
-  .stat-glow-amber { background: linear-gradient(135deg, hsl(38 92% 50% / 0.1), hsl(38 92% 50% / 0.03)); }
+
+  /* Base glass surface */
+  .glass {
+    background: rgba(255, 255, 255, 0.58);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    box-shadow:
+      0 0 0 0.5px rgba(255, 255, 255, 0.55) inset,
+      0 8px 32px rgba(99, 102, 241, 0.08),
+      0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Thicker sidebar glass */
+  .glass-sidebar {
+    background: rgba(255, 255, 255, 0.52);
+    backdrop-filter: blur(44px) saturate(200%);
+    -webkit-backdrop-filter: blur(44px) saturate(200%);
+    border-right: 1px solid rgba(255, 255, 255, 0.72);
+    box-shadow:
+      1px 0 0 rgba(255, 255, 255, 0.45) inset,
+      6px 0 28px rgba(99, 102, 241, 0.07);
+  }
+
+  /* Slightly stronger card glass */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.80);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.9) inset,
+      0 -1px 0 rgba(255, 255, 255, 0.2) inset,
+      0 8px 32px rgba(99, 102, 241, 0.08),
+      0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Coloured tint stat cards */
+  .glass-stat-indigo {
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.12) 0%, rgba(255,255,255,0.55) 50%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(99, 102, 241, 0.22);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.85) inset,
+      0 8px 32px rgba(99, 102, 241, 0.10),
+      0 2px 8px rgba(0,0,0,0.05);
+  }
+  .glass-stat-amber {
+    background: linear-gradient(145deg, rgba(251, 191, 36, 0.14) 0%, rgba(255,255,255,0.55) 50%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.85) inset,
+      0 8px 32px rgba(251, 191, 36, 0.10),
+      0 2px 8px rgba(0,0,0,0.05);
+  }
+  .glass-stat-emerald {
+    background: linear-gradient(145deg, rgba(52, 211, 153, 0.13) 0%, rgba(255,255,255,0.55) 50%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(52, 211, 153, 0.22);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.85) inset,
+      0 8px 32px rgba(52, 211, 153, 0.10),
+      0 2px 8px rgba(0,0,0,0.05);
+  }
+  .glass-stat-violet {
+    background: linear-gradient(145deg, rgba(167, 139, 250, 0.14) 0%, rgba(255,255,255,0.55) 50%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(167, 139, 250, 0.24);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.85) inset,
+      0 8px 32px rgba(167, 139, 250, 0.10),
+      0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  /* Top-bar glass (sticky) */
+  .glass-topbar {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(32px) saturate(180%);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 2px 12px rgba(99,102,241,0.06);
+  }
+
+  /* Input glass */
+  .glass-input {
+    background: rgba(255, 255, 255, 0.55) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.75) !important;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  /* Glass pill nav active */
+  .glass-nav-active {
+    background: rgba(99, 102, 241, 0.13);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset;
+  }
+
+  /* Specular highlight line for top edge */
+  .specular-top::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9) 40%, rgba(255,255,255,0.9) 60%, transparent);
+    border-radius: 9999px;
+    pointer-events: none;
+  }
 }
