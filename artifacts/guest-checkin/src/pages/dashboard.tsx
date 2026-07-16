@@ -1,116 +1,182 @@
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGetBookingStats, useListRecentBookings } from "@workspace/api-client-react";
-import { Users, FileText, CheckCircle2, Clock, Globe } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Users, Clock, CheckCircle2, Globe, TrendingUp, Plus, ArrowRight, Calendar } from "lucide-react";
 
-export default function Dashboard() {
-  const { data: stats, isLoading: statsLoading } = useGetBookingStats();
-  const { data: recent, isLoading: recentLoading } = useListRecentBookings();
-
-  if (statsLoading || recentLoading) {
-    return (
-      <AdminLayout>
-        <div className="animate-pulse space-y-6">
-          <div className="h-10 w-48 bg-muted rounded"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-muted rounded-xl"></div>)}
-          </div>
-          <div className="h-64 bg-muted rounded-xl"></div>
-        </div>
-      </AdminLayout>
-    );
-  }
-
+function getInitials(name: string) {
+  return name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
+}
+function getAvatarBg(name: string) {
+  const colors = [
+    'bg-indigo-500', 'bg-violet-500', 'bg-emerald-500', 
+    'bg-amber-500', 'bg-rose-500', 'bg-teal-500', 'bg-sky-500', 'bg-orange-500'
+  ];
+  const idx = name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % colors.length;
+  return colors[idx];
+}
+function StatusPill({ status }: { status: string }) {
+  if (status === 'completed') return (
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200">
+      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />Completed
+    </span>
+  );
   return (
-    <AdminLayout>
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-serif text-foreground">Welcome back, Staff</h1>
-          <p className="text-muted-foreground mt-1">Here's what's happening at the front desk today.</p>
-        </div>
-        <Link href="/bookings/new" className="hidden sm:block">
-          <Button>Create Booking</Button>
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <StatCard title="Today's Arrivals" value={stats?.todayCheckins || 0} icon={Users} color="text-blue-600" />
-        <StatCard title="Pending Checks" value={stats?.pendingBookings || 0} icon={Clock} color="text-amber-600" />
-        <StatCard title="Completed" value={stats?.completedBookings || 0} icon={CheckCircle2} color="text-emerald-600" />
-        <StatCard title="Foreign Nationals" value={stats?.foreignNationals || 0} icon={Globe} color="text-purple-600" />
-      </div>
-
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-serif">Recent Bookings</h2>
-        <Link href="/bookings" className="text-sm text-primary hover:underline font-medium">View all</Link>
-      </div>
-
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Ref</TableHead>
-              <TableHead>Guest Name</TableHead>
-              <TableHead>Room</TableHead>
-              <TableHead>Check-in</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {recent && recent.length > 0 ? (
-              recent.map((booking) => (
-                <TableRow key={booking.id}>
-                  <TableCell className="font-mono text-xs">{booking.bookingRef}</TableCell>
-                  <TableCell className="font-medium">
-                    <Link href={`/bookings/${booking.id}`} className="hover:text-primary hover:underline">
-                      {booking.guestName}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{booking.roomNumber}</TableCell>
-                  <TableCell>{new Date(booking.checkInDate).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <Badge variant={booking.status === 'completed' ? 'success' : 'warning'}>
-                      {booking.status}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                  No recent bookings found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Card>
-      
-      <div className="sm:hidden mt-6">
-        <Link href="/bookings/new">
-          <Button className="w-full">Create Booking</Button>
-        </Link>
-      </div>
-    </AdminLayout>
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-amber-200">
+      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />Pending
+    </span>
   );
 }
 
-function StatCard({ title, value, icon: Icon, color }: { title: string, value: number, icon: any, color: string }) {
+export default function Dashboard() {
+  const { data: stats, isLoading: statsLoading } = useGetBookingStats();
+  const { data: recentBookings, isLoading: recentLoading } = useListRecentBookings();
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const dateStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
   return (
-    <Card>
-      <CardContent className="p-6 flex items-center justify-between">
+    <AdminLayout>
+      <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
         <div>
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-serif mt-2">{value}</p>
+          <h1 className="font-serif text-2xl font-semibold text-foreground">{greeting}, Staff</h1>
+          <p className="text-muted-foreground mt-1">{dateStr}</p>
         </div>
-        <div className={`p-4 rounded-full bg-muted/50 ${color}`}>
-          <Icon className="w-6 h-6" />
+        <Link href="/bookings/new">
+          <Button className="bg-primary hover:bg-primary/90 text-white">
+            <Plus className="w-4 h-4 mr-2" />
+            New Booking
+          </Button>
+        </Link>
+      </div>
+
+      {(statsLoading || recentLoading) ? (
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1,2,3,4].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
+          </div>
+          <div className="space-y-4">
+            {[1,2,3,4,5].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      ) : (
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Today's Arrivals */}
+            <div className="rounded-xl bg-card border border-card-border p-6 shadow-sm hover:shadow-md transition-shadow border-b-2 border-b-indigo-400 stat-glow-indigo flex flex-col justify-between">
+              <div className="flex justify-between items-start">
+                <p className="text-sm text-muted-foreground font-medium">Today's Arrivals</p>
+                <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-500">
+                  <Users className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <h3 className="text-4xl font-bold font-serif text-indigo-600">{stats?.todayCheckins ?? 0}</h3>
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-2">
+                  <TrendingUp className="w-3 h-3 text-indigo-500" />
+                  + 2 since yesterday
+                </p>
+              </div>
+            </div>
+
+            {/* Pending Check-ins */}
+            <div className="rounded-xl bg-card border border-card-border p-6 shadow-sm hover:shadow-md transition-shadow border-b-2 border-b-amber-400 stat-glow-amber flex flex-col justify-between">
+              <div className="flex justify-between items-start">
+                <p className="text-sm text-muted-foreground font-medium">Pending Check-ins</p>
+                <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
+                  <Clock className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <h3 className="text-4xl font-bold font-serif text-amber-600">{stats?.pendingBookings ?? 0}</h3>
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-2">
+                  <TrendingUp className="w-3 h-3 text-amber-500" />
+                  + 1 since yesterday
+                </p>
+              </div>
+            </div>
+
+            {/* Completed */}
+            <div className="rounded-xl bg-card border border-card-border p-6 shadow-sm hover:shadow-md transition-shadow border-b-2 border-b-emerald-400 stat-glow-emerald flex flex-col justify-between">
+              <div className="flex justify-between items-start">
+                <p className="text-sm text-muted-foreground font-medium">Completed</p>
+                <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-500">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <h3 className="text-4xl font-bold font-serif text-emerald-600">{stats?.completedBookings ?? 0}</h3>
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-2">
+                  <TrendingUp className="w-3 h-3 text-emerald-500" />
+                  + 5 since yesterday
+                </p>
+              </div>
+            </div>
+
+            {/* Foreign Nationals */}
+            <div className="rounded-xl bg-card border border-card-border p-6 shadow-sm hover:shadow-md transition-shadow border-b-2 border-b-violet-400 stat-glow-violet flex flex-col justify-between">
+              <div className="flex justify-between items-start">
+                <p className="text-sm text-muted-foreground font-medium">Foreign Nationals</p>
+                <div className="p-2 bg-violet-500/10 rounded-lg text-violet-500">
+                  <Globe className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <h3 className="text-4xl font-bold font-serif text-violet-600">{stats?.foreignNationals ?? 0}</h3>
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-2">
+                  <TrendingUp className="w-3 h-3 text-violet-500" />
+                  + 0 since yesterday
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-foreground">Recent Bookings</h2>
+              <Link href="/bookings" className="text-primary text-sm font-medium hover:underline flex items-center">
+                View all <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              </Link>
+            </div>
+
+            <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden flex flex-col divide-y divide-border">
+              {(!recentBookings || recentBookings.length === 0) ? (
+                <div className="p-10 flex flex-col items-center justify-center text-muted-foreground">
+                  <Calendar className="w-10 h-10 mb-3 opacity-20" />
+                  <p>No recent bookings</p>
+                </div>
+              ) : (
+                recentBookings.map(b => (
+                  <Link key={b.id} href={`/bookings/${b.id}`} className="flex items-center gap-4 p-4 hover:bg-muted/50 cursor-pointer transition-colors group block">
+                    <div className="flex items-center gap-4 w-full">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium text-sm shrink-0 ${getAvatarBg(b.guestName)}`}>
+                        {getInitials(b.guestName)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground truncate">{b.guestName}</p>
+                        <p className="text-xs text-muted-foreground font-mono mt-0.5">{b.bookingRef}</p>
+                      </div>
+                      <div className="hidden sm:block text-right pr-4">
+                        <p className="text-sm text-muted-foreground">{new Date(b.checkInDate).toLocaleDateString()}</p>
+                        <p className="text-xs mt-1">
+                          <span className="bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                            Room {b.roomNumber || "TBD"}
+                          </span>
+                        </p>
+                      </div>
+                      <div className="shrink-0">
+                        <StatusPill status={b.status} />
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </AdminLayout>
   );
 }
