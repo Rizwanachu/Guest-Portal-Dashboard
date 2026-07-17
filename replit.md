@@ -12,6 +12,39 @@ A digital guest check-in platform for hotels. Staff create bookings and share a 
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - Required env: `DATABASE_URL` — Postgres connection string
 
+## Vercel Deployment
+
+The project deploys as a **single Vercel project**: the frontend is a static build, the API runs as a serverless function. Both share the same domain so cookies and relative `/api/...` paths work without extra config.
+
+### Vercel project settings (set once in the dashboard)
+Vercel auto-reads `vercel.json` for build/output/routing. No dashboard overrides needed except environment variables.
+
+### Required environment variables (Vercel → Settings → Environment Variables)
+| Variable | Required | Notes |
+|---|---|---|
+| `DATABASE_URL` | ✅ | Postgres connection string. Use a pooler URL (e.g. Neon pooled endpoint) for best serverless performance. |
+| `JWT_SECRET` | ✅ | Any long random string. The server throws at startup in production if this is missing. |
+| `SESSION_SECRET` | ✅ | Used by cookie-parser for signed cookies. |
+| `ALLOWED_ORIGINS` | Optional | Comma-separated list of allowed CORS origins. Leave unset if frontend and API share the same Vercel domain (default). Set only if you split them into separate projects. |
+| `SMTP_HOST` | Optional | SMTP server hostname for email. The server logs-only and skips sending if unconfigured. |
+| `SMTP_PORT` | Optional | SMTP port (e.g. 587). |
+| `SMTP_USER` | Optional | SMTP username / email address. |
+| `SMTP_PASS` | Optional | SMTP password. |
+| `SMTP_FROM` | Optional | From address for outgoing emails. |
+| `APP_URL` | Optional | Public URL of the deployment (e.g. `https://yourapp.vercel.app`). Used in email links. |
+| `LOG_LEVEL` | Optional | Pino log level (`info`, `warn`, `error`). Defaults to `info`. |
+
+### Database: apply schema to production
+After creating the Vercel project and setting `DATABASE_URL`, run schema migrations against your production database once (from your local machine or Replit):
+```
+DATABASE_URL=<prod-url> pnpm --filter @workspace/db run push
+```
+
+### Architecture notes
+- `vercel.json` routes `/api/*` → `api/index.ts` (Express serverless handler) and all other paths → `index.html` (SPA fallback).
+- File uploads (ID photos, signatures) are stored as base64 data URLs directly in the `guests` table. This works for low-to-medium volume. For higher traffic, wire uploads to Vercel Blob or S3 (see the "Keep guest uploads safe" task).
+- The Express app is exported from `api/index.ts` at the project root — do not move or rename this file.
+
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9

@@ -1,8 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, ilike, or, desc } from "drizzle-orm";
 import { db, bookingsTable, guestsTable } from "@workspace/db";
-import { writeFileSync, mkdirSync, existsSync } from "fs";
-import { join } from "path";
 import {
   GetCheckinSessionParams,
   SubmitGuestCheckinParams,
@@ -14,24 +12,10 @@ import {
 
 const router: IRouter = Router();
 
-const UPLOADS_DIR = "/tmp/guest-uploads";
-
-function ensureUploadsDir() {
-  if (!existsSync(UPLOADS_DIR)) {
-    mkdirSync(UPLOADS_DIR, { recursive: true });
-  }
-}
-
-function saveDataUrl(dataUrl: string, fileName: string): string {
-  ensureUploadsDir();
-  const matches = dataUrl.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
-  if (!matches) return dataUrl; // not a data URL, return as-is
-  const ext = matches[1].split("/")[1] ?? "bin";
-  const safeFileName = fileName.replace(/[^a-z0-9._-]/gi, "_");
-  const filePath = join(UPLOADS_DIR, `${Date.now()}_${safeFileName}.${ext}`);
-  writeFileSync(filePath, Buffer.from(matches[2], "base64"));
-  // Return a URL path that the API serves
-  return `/api/uploads/${Date.now()}_${safeFileName}.${ext}`;
+// Store data URLs directly in the database (serverless-compatible — no local filesystem).
+// For high-volume production use, migrate to an object storage service instead.
+function saveDataUrl(dataUrl: string, _fileName: string): string {
+  return dataUrl;
 }
 
 // GET /checkin/:token — public endpoint for guests
