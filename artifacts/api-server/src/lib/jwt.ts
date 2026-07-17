@@ -1,10 +1,15 @@
 import jwt from "jsonwebtoken";
 import type { SafeUser } from "@workspace/db";
 
+const IS_PROD = process.env.NODE_ENV === "production";
+
+if (IS_PROD && !process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable must be set in production.");
+}
+
 const JWT_SECRET = process.env.JWT_SECRET ?? "dev-secret-change-in-production-please";
 const JWT_EXPIRES_IN = "7d";
 const COOKIE_NAME = "auth_token";
-const IS_PROD = process.env.NODE_ENV === "production";
 
 export interface JwtPayload {
   userId: number;

@@ -20,6 +20,7 @@ import HotelProfile from '@/pages/hotel/profile';
 import RoomsPage from '@/pages/hotel/rooms';
 import StaffPage from '@/pages/hotel/staff';
 import ReportsPage from '@/pages/reports/index';
+import ResetPasswordPage from '@/pages/reset-password';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -62,6 +63,7 @@ function Router() {
       {/* Public routes */}
       <Route path="/login" component={LoginPage} />
       <Route path="/setup" component={SetupPage} />
+      <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/checkin/:token" component={CheckinForm} />
 
       {/* Protected admin routes */}
