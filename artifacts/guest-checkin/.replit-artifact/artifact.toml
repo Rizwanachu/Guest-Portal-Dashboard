@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Hotel Guest Check-in"
+version = "1.0.0"
+id = "artifacts/guest-checkin"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21770
+
+[services.development]
+run = "pnpm --filter @workspace/guest-checkin run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/guest-checkin", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/guest-checkin/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21770"
+BASE_PATH = "/"

@@ -1,0 +1,50 @@
+I'm building "CheckInn," a hotel check-in management app for W & H Residency. Update the flow based on new requirements — this replaces the earlier "New Booking" manual-entry approach.
+
+CONSTRAINTS (unchanged, non-negotiable):
+- No third-party auth providers. Custom auth: bcrypt password hashing + JWT or server-side sessions, for staff/admin login only. Guests never log in.
+- No cloud database. Use SQLite as the DB, local file, accessed via Prisma or Drizzle.
+- No cloud file storage. Store ID/passport uploads on local disk in /uploads, path saved in SQLite.
+- Email via plain SMTP (nodemailer + Gmail SMTP or Brevo free relay) for staff invites only.
+- Zero recurring cost, no per-request billing, self-contained app.
+
+CORE FLOW — REBUILD THIS (staff must never manually type guest details):
+
+1. Remove the current "New Booking" form that has staff typing guest name/phone/etc. Replace the entry point with a "New Guest Link" button. Clicking it creates a booking record with just: a unique token (UUID), status = "Awaiting Guest Details", timestamp, and which staff member generated it. Nothing guest-related is filled in yet.
+
+2. This generates a shareable URL: /checkin/[token]. Staff sends this to the guest (WhatsApp/SMS — just show a "Copy Link" button, no need to auto-send).
+
+3. Build the public /checkin/[token] page, mobile-first, no login required:
+   - Guest enters how many people are staying (this drives how many guest-detail blocks render)
+   - Guest enters requested check-in/check-out dates, room type preference if applicable
+   - One repeatable form block per guest: Full Name, Phone Number, Email, Address, Nationality
+   - Each guest uploads their ID photo (Aadhaar/Licence/Passport)
+   - If nationality ≠ India, show additional FRRO fields: Passport Number, Visa Number, Visa Type, Date of Arrival in India, Purpose of Visit, Next Destination
+   - Submit button — saves everything against the booking record, sets booking status to "Confirmed," and generates the booking's QR code at this point (see step 4)
+   - Confirmation screen after submit, plus show the same QR code to the guest here too (in case they want to screenshot it for later, though the desk will also have it)
+
+4. QR code generation: encode the booking's token into a QR code (use a library like `qrcode` npm package, generate server-side or client-side, doesn't need to hit any external QR API). The QR should resolve to /scan/[token] when scanned.
+
+5. Build a /scan/[token] endpoint/page that staff (or the guest, if scanning at a kiosk) hits by scanning the QR:
+   - If booking status is "Confirmed" (not yet checked in) → flip to "Checked In," timestamp it, show a success screen ("Checked in at [time]")
+   - If booking status is "Checked In" → flip to "Checked Out," timestamp it, show a success screen
+   - If booking is "Awaiting Guest Details" (guest hasn't filled the form yet) → show an error screen, don't allow check-in
+   - Log every scan/status change to the audit_logs table
+
+6. Build a staff-facing "Scan QR" page in the admin dashboard using the device camera (use a library like `html5-qrcode` or `react-qr-scanner`) so staff can scan a guest's phone-displayed or printed QR at the front desk. This hits the same /scan/[token] logic.
+
+7. On each booking's detail view in the admin dashboard, show its current QR code (so staff can print or display it if the guest doesn't have it handy), plus the current status (Awaiting Guest Details / Confirmed / Checked In / Checked Out), plus a manual override — buttons to force-set "Checked In" or "Checked Out" directly, for when scanning isn't practical. Manual overrides should also log to audit_logs, tagged as manual vs. scanned.
+
+8. Bookings list view: replace any reference to the old manual form. Each row should reflect live status (Awaiting Guest Details / Confirmed / Checked In / Checked Out) with a visual indicator (color-coded badge). Clicking a row opens the booking detail with the QR code, guest details, uploaded IDs, and manual override controls from step 7.
+
+DATA LAYER:
+SQLite schema: hotels, rooms, room_types, bookings (token, status, dates, room_type, created_by_staff_id, checked_in_at, checked_out_at), guests (linked to booking, name/phone/email/address/nationality/id_image_path/FRRO fields), staff, audit_logs (actor, action, target, metadata, timestamp — must be read from this table everywhere it's displayed, not hardcoded).
+
+ALSO FIX (from earlier review):
+- Hotel Profile must load/save real data (currently shows placeholder "Nazim Hotel" / Maharashtra instead of W & H Residency / Kochi, Kerala).
+- Dashboard stat cards (Arrivals, Departures, Active Bookings, etc.) must compute live from the bookings table.
+- Reports > FRRO Register tab should list every foreign-national guest across all bookings.
+
+DESIGN:
+Apple "Liquid Glass" aesthetic — translucent frosted panels (backdrop-filter: blur), soft rgba backgrounds, subtle borders, rounded corners, layered depth, light airy palette instead of the current flat purple. Prioritize this on the guest-facing /checkin and /scan pages since that's the guest's only impression of the hotel.
+
+Build order: (1) SQLite schema, (2) New Guest Link + public check-in form + auto-populated booking, (3) QR generation + scan flow (both directions, in/out) + manual override, (4) staff camera-scan page, (5) bug fixes, (6) FRRO Register report, (7) Liquid Glass restyle. Confirm the DB schema with me before building it, since booking status transitions matter a lot here.

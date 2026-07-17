@@ -1,0 +1,253 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: var(--destructive-border);
+
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+  --color-sidebar-muted-foreground: hsl(var(--sidebar-muted-foreground));
+
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+}
+
+:root {
+  --background: 248 100% 99%;
+  --foreground: 240 15% 12%;
+  --border: 240 20% 88%;
+  --input: 240 20% 90%;
+  --ring: 245 80% 64%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 240 15% 12%;
+  --card-border: 240 30% 90%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 15% 12%;
+  --popover-border: 240 30% 90%;
+
+  --primary: 245 80% 60%;
+  --primary-foreground: 0 0% 100%;
+  --primary-border: hsl(245 80% 60% / 0.3);
+
+  --secondary: 262 83% 58%;
+  --secondary-foreground: 0 0% 100%;
+  --secondary-border: hsl(262 83% 58% / 0.3);
+
+  --muted: 240 20% 94%;
+  --muted-foreground: 240 10% 46%;
+  --muted-border: hsl(240 20% 88%);
+
+  --accent: 245 80% 60%;
+  --accent-foreground: 0 0% 100%;
+  --accent-border: hsl(245 80% 60% / 0.2);
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --destructive-border: hsl(0 84% 60% / 0.3);
+
+  /* Sidebar — light glass tokens */
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 240 15% 14%;
+  --sidebar-border: 240 30% 88%;
+  --sidebar-primary: 245 80% 60%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 245 80% 96%;
+  --sidebar-accent-foreground: 245 80% 45%;
+  --sidebar-ring: 245 80% 60%;
+  --sidebar-muted-foreground: 240 10% 52%;
+
+  --radius: 1rem;
+  --app-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  --app-font-serif: 'Outfit', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  --app-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply font-sans antialiased text-foreground;
+    background-color: #f0eeff;
+    background-image:
+      radial-gradient(ellipse 90% 65% at 10% -10%, rgba(167, 139, 250, 0.22) 0%, transparent 55%),
+      radial-gradient(ellipse 55% 45% at 88% 8%,  rgba(99, 102, 241, 0.17) 0%, transparent 52%),
+      radial-gradient(ellipse 65% 55% at 65% 100%, rgba(196, 181, 253, 0.15) 0%, transparent 58%),
+      radial-gradient(ellipse 40% 38% at 2% 72%,  rgba(167, 139, 250, 0.12) 0%, transparent 50%),
+      radial-gradient(ellipse 50% 40% at 95% 55%,  rgba(244, 114, 182, 0.07) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+  canvas { touch-action: none; }
+}
+
+/* ── Liquid Glass Utilities ── */
+@layer utilities {
+
+  /* Base glass surface */
+  .glass {
+    background: rgba(255, 255, 255, 0.58);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    box-shadow:
+      0 0 0 0.5px rgba(255, 255, 255, 0.55) inset,
+      0 8px 32px rgba(99, 102, 241, 0.08),
+      0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Thicker sidebar glass */
+  .glass-sidebar {
+    background: rgba(255, 255, 255, 0.52);
+    backdrop-filter: blur(44px) saturate(200%);
+    -webkit-backdrop-filter: blur(44px) saturate(200%);
+    border-right: 1px solid rgba(255, 255, 255, 0.72);
+    box-shadow:
+      1px 0 0 rgba(255, 255, 255, 0.45) inset,
+      6px 0 28px rgba(99, 102, 241, 0.07);
+  }
+
+  /* Slightly stronger card glass */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.80);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.9) inset,
+      0 -1px 0 rgba(255, 255, 255, 0.2) inset,
+      0 8px 32px rgba(99, 102, 241, 0.08),
+      0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Coloured tint stat cards */
+  .glass-stat-indigo {
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.12) 0%, rgba(255,255,255,0.55) 50%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(99, 102, 241, 0.22);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.85) inset,
+      0 8px 32px rgba(99, 102, 241, 0.10),
+      0 2px 8px rgba(0,0,0,0.05);
+  }
+  .glass-stat-amber {
+    background: linear-gradient(145deg, rgba(251, 191, 36, 0.14) 0%, rgba(255,255,255,0.55) 50%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.85) inset,
+      0 8px 32px rgba(251, 191, 36, 0.10),
+      0 2px 8px rgba(0,0,0,0.05);
+  }
+  .glass-stat-emerald {
+    background: linear-gradient(145deg, rgba(52, 211, 153, 0.13) 0%, rgba(255,255,255,0.55) 50%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(52, 211, 153, 0.22);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.85) inset,
+      0 8px 32px rgba(52, 211, 153, 0.10),
+      0 2px 8px rgba(0,0,0,0.05);
+  }
+  .glass-stat-violet {
+    background: linear-gradient(145deg, rgba(167, 139, 250, 0.14) 0%, rgba(255,255,255,0.55) 50%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(167, 139, 250, 0.24);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.85) inset,
+      0 8px 32px rgba(167, 139, 250, 0.10),
+      0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  /* Top-bar glass (sticky) */
+  .glass-topbar {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(32px) saturate(180%);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 2px 12px rgba(99,102,241,0.06);
+  }
+
+  /* Input glass */
+  .glass-input {
+    background: rgba(255, 255, 255, 0.55) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.75) !important;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  /* Glass pill nav active */
+  .glass-nav-active {
+    background: rgba(99, 102, 241, 0.13);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset;
+  }
+
+  /* Specular highlight line for top edge */
+  .specular-top::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9) 40%, rgba(255,255,255,0.9) 60%, transparent);
+    border-radius: 9999px;
+    pointer-events: none;
+  }
+}
