@@ -1,20 +1,10 @@
 {
   "version": 2,
   "installCommand": "pnpm install --frozen-lockfile",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "public" }
-    },
-    {
-      "src": "api/index.ts",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/index.ts" },
-    { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "buildCommand": "PORT=3000 BASE_PATH=/ pnpm --filter @workspace/guest-checkin run build",
+  "outputDirectory": "artifacts/guest-checkin/dist/public",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index" },
+    { "source": "/:path*", "destination": "/index.html" }
   ]
 }
