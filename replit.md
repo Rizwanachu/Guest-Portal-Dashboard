@@ -17,7 +17,9 @@ A digital guest check-in platform for hotels. Staff create bookings and share a 
 The project deploys as a **single Vercel project**: the frontend is a static build, the API runs as a serverless function. Both share the same domain so cookies and relative `/api/...` paths work without extra config.
 
 ### Vercel project settings (set once in the dashboard)
-Vercel auto-reads `vercel.json` for build/output/routing. No dashboard overrides needed except environment variables.
+Vercel reads `vercel.json` automatically. No build settings to configure in the dashboard — all routing and build steps are declared in `vercel.json`.
+
+**How it works**: `@vercel/static-build` runs the `vercel-build` script (frontend Vite build) and serves `artifacts/guest-checkin/dist/public` as static files. `@vercel/node` compiles `api/index.ts` (which re-exports the Express app) as a serverless function. Routes send `/api/*` to the function and everything else falls through to `index.html`.
 
 ### Required environment variables (Vercel → Settings → Environment Variables)
 | Variable | Required | Notes |

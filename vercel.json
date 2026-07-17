@@ -1,10 +1,20 @@
 {
   "version": 2,
-  "buildCommand": "PORT=3000 BASE_PATH=/ pnpm --filter @workspace/guest-checkin run build",
-  "outputDirectory": "artifacts/guest-checkin/dist/public",
   "installCommand": "pnpm install --frozen-lockfile",
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" },
-    { "source": "/(.*)", "destination": "/index.html" }
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "artifacts/guest-checkin/dist/public" }
+    },
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.ts" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
