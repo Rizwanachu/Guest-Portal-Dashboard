@@ -1,0 +1,5 @@
+- [Auth System](auth-system.md) — JWT + httpOnly cookie named `auth_token`; bcrypt; setup-wizard on first run; 3 roles: super_admin/admin/staff
+- [Stack Decisions](stack-decisions.md) — Vite+React+Express kept (not Next.js); new API calls use plain fetch not generated Orval client; cookies need `credentials:"include"` on every fetch
+- [DB Notes](db-notes.md) — dates stored as ISO text in bookings; new tables: users/hotels/room_types/rooms/staff/audit_logs/email_templates; push via `pnpm --filter @workspace/db run push`
+- [Route Auth](route-auth.md) — hotels/rooms/staff/reports routers apply `requireAuth` internally; bookings/guests routes currently unprotected (guest checkin flow must stay public)
+- [SMTP](smtp-notes.md) — nodemailer infrastructure in `api-server/src/lib/email.ts`; needs SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASS SMTP_FROM env vars; gracefully logs-only if unconfigured
