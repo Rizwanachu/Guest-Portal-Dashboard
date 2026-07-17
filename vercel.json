@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "framework": "vite",
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "PORT=3000 BASE_PATH=/ pnpm --filter @workspace/guest-checkin run build",
   "outputDirectory": "artifacts/guest-checkin/dist/public",
