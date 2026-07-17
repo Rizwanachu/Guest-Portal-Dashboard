@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc, count, sql, ilike, or } from "drizzle-orm";
+import { eq, desc, count, sql, ilike, or, lte, gte, and, inArray } from "drizzle-orm";
 import { db, bookingsTable, guestsTable } from "@workspace/db";
 import { randomBytes } from "crypto";
 import {
@@ -28,6 +28,129 @@ function getBaseUrl(req: { headers: { host?: string }; protocol: string }): stri
   const host = req.headers.host ?? "localhost";
   return `${req.protocol}://${host}`;
 }
+
+// GET /bookings/departures — today's check-outs (must be before /:id)
+router.get("/bookings/departures", async (req, res): Promise<void> => {
+  const today = new Date().toISOString().split("T")[0];
+  const departures = await db
+    .select()
+    .from(bookingsTable)
+    .where(sql`${bookingsTable.checkOutDate} LIKE ${today + "%"}`)
+    .orderBy(bookingsTable.checkOutDate);
+
+  const guestCounts = await db
+    .select({ bookingId: guestsTable.bookingId, count: count() })
+    .from(guestsTable)
+    .groupBy(guestsTable.bookingId);
+  const guestCountMap = new Map(guestCounts.map((g) => [g.bookingId, Number(g.count)]));
+
+  res.json(
+    departures.map((b) => ({
+      ...b,
+      guestsSubmitted: guestCountMap.get(b.id) ?? 0,
+      createdAt: b.createdAt.toISOString(),
+    }))
+  );
+});
+
+// GET /bookings/arrivals — today's check-ins (must be before /:id)
+router.get("/bookings/arrivals", async (req, res): Promise<void> => {
+  const today = new Date().toISOString().split("T")[0];
+  const arrivals = await db
+    .select()
+    .from(bookingsTable)
+    .where(sql`${bookingsTable.checkInDate} LIKE ${today + "%"}`)
+    .orderBy(bookingsTable.checkInDate);
+
+  const guestCounts = await db
+    .select({ bookingId: guestsTable.bookingId, count: count() })
+    .from(guestsTable)
+    .groupBy(guestsTable.bookingId);
+  const guestCountMap = new Map(guestCounts.map((g) => [g.bookingId, Number(g.count)]));
+
+  res.json(
+    arrivals.map((b) => ({
+      ...b,
+      guestsSubmitted: guestCountMap.get(b.id) ?? 0,
+      createdAt: b.createdAt.toISOString(),
+    }))
+  );
+});
+
+// GET /bookings/occupancy — 14-day occupancy chart data (must be before /:id)
+router.get("/bookings/occupancy", async (req, res): Promise<void> => {
+  const days: string[] = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(d.toISOString().split("T")[0]!);
+  }
+
+  const data = await Promise.all(
+    days.map(async (date) => {
+      const dayStart = date + "T00:00:00.000Z";
+      const dayEnd = date + "T23:59:59.999Z";
+
+      const [occupied] = await db
+        .select({ count: count() })
+        .from(bookingsTable)
+        .where(
+          and(
+            lte(bookingsTable.checkInDate, dayEnd),
+            gte(bookingsTable.checkOutDate, dayStart)
+          )
+        );
+
+      const [arrivals] = await db
+        .select({ count: count() })
+        .from(bookingsTable)
+        .where(sql`${bookingsTable.checkInDate} LIKE ${date + "%"}`);
+
+      const [departures] = await db
+        .select({ count: count() })
+        .from(bookingsTable)
+        .where(sql`${bookingsTable.checkOutDate} LIKE ${date + "%"}`);
+
+      return {
+        date,
+        label: new Date(date + "T12:00:00Z").toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        occupied: Number(occupied?.count ?? 0),
+        arrivals: Number(arrivals?.count ?? 0),
+        departures: Number(departures?.count ?? 0),
+      };
+    })
+  );
+
+  res.json(data);
+});
+
+// POST /bookings/bulk-status — bulk status update (must be before /:id)
+router.post("/bookings/bulk-status", async (req, res): Promise<void> => {
+  const { ids, status } = req.body as { ids: number[]; status: string };
+  if (!Array.isArray(ids) || ids.length === 0 || !["pending", "completed"].includes(status)) {
+    res.status(400).json({ error: "Invalid request" });
+    return;
+  }
+  await db
+    .update(bookingsTable)
+    .set({ status: status as "pending" | "completed" })
+    .where(inArray(bookingsTable.id, ids));
+  res.json({ updated: ids.length });
+});
+
+// POST /bookings/bulk-delete — bulk delete (must be before /:id)
+router.post("/bookings/bulk-delete", async (req, res): Promise<void> => {
+  const { ids } = req.body as { ids: number[] };
+  if (!Array.isArray(ids) || ids.length === 0) {
+    res.status(400).json({ error: "Invalid ids" });
+    return;
+  }
+  await db.delete(bookingsTable).where(inArray(bookingsTable.id, ids));
+  res.json({ deleted: ids.length });
+});
 
 // GET /bookings/stats — must be before /bookings/:id
 router.get("/bookings/stats", async (req, res): Promise<void> => {
@@ -286,6 +409,37 @@ router.delete("/bookings/:id", async (req, res): Promise<void> => {
   }
 
   res.sendStatus(204);
+});
+
+// POST /bookings/:id/duplicate
+router.post("/bookings/:id/duplicate", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id ?? "", 10);
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [original] = await db.select().from(bookingsTable).where(eq(bookingsTable.id, id));
+  if (!original) { res.status(404).json({ error: "Booking not found" }); return; }
+
+  const [duplicate] = await db
+    .insert(bookingsTable)
+    .values({
+      bookingRef: generateBookingRef(),
+      checkinToken: generateToken(),
+      guestName: original.guestName,
+      phone: original.phone,
+      roomNumber: original.roomNumber,
+      checkInDate: original.checkInDate,
+      checkOutDate: original.checkOutDate,
+      numberOfGuests: original.numberOfGuests,
+      notes: original.notes ? `(Copy) ${original.notes}` : null,
+      status: "pending",
+    })
+    .returning();
+
+  res.status(201).json({
+    ...duplicate,
+    guestsSubmitted: 0,
+    createdAt: duplicate!.createdAt.toISOString(),
+  });
 });
 
 // GET /bookings/:id/checkin-link
